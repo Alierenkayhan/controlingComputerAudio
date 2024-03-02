@@ -21,3 +21,4 @@ C:\Users\ali_e\Desktop\GitHub\controlingComputerAudio\controlingComputer\obj\Deb
 C:\Users\ali_e\Desktop\GitHub\controlingComputerAudio\controlingComputer\obj\Debug\net8.0\controlingComputer.pdb
 C:\Users\ali_e\Desktop\GitHub\controlingComputerAudio\controlingComputer\obj\Debug\net8.0\controlingComputer.genruntimeconfig.cache
 C:\Users\ali_e\Desktop\GitHub\controlingComputerAudio\controlingComputer\obj\Debug\net8.0\ref\controlingComputer.dll
+C:\Users\ali_e\Desktop\GitHub\controlingComputerAudio\controlingComputer\bin\Debug\net8.0\RabbitMQ.Client.dll

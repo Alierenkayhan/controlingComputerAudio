@@ -1,69 +1,33 @@
-﻿using System;
+﻿using NAudio.CoreAudioApi;
 using System.Diagnostics;
-using System.Text;
-using System.Threading;
-using NAudio.CoreAudioApi;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
+using System.IO.Ports;
 
 class Program
 {
     static void Main()
     {
-        var connectionHost = "";
-        var username = "";
-        var password = "";
-        var audioQueueName = "FromArduino";
-
-        var factory = new ConnectionFactory
+        // Arduino'ya ait COM portunu belirtin
+        using (SerialPort port = new SerialPort("COM6", 9600))
         {
-            HostName = connectionHost,
-            UserName = username,
-            Password = password,
-        };
+            port.Open();
 
-        using var connection = factory.CreateConnection();
-        using var channel = connection.CreateModel();
-
-        channel.QueueDeclare(audioQueueName, durable: true, exclusive: false, autoDelete: false);
-
-        var consumer = new EventingBasicConsumer(channel);
-        consumer.Received += (sender, e) =>
-        {
-            var body = e.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body).Trim('\"');
-
-            if (message == "audioincrease" || message == "audiodecrease")
+            while (true)
             {
-                AdjustVolume(message);
+                if (port.BytesToRead > 0)
+                {
+                    string receivedData = port.ReadExisting();
+                    Console.WriteLine($"ReceivedData: {receivedData}");
+                    if (receivedData == "1" || receivedData == "2")
+                    {
+                        AdjustVolume(receivedData);
+                    }
+                    else if (receivedData == "3" || receivedData == "4")
+                    {
+                        OpenVideo(receivedData);
+                    }
+                }
             }
-            else if (message == "video1" || message == "video2")
-            {
-                OpenVideo(message);
-            }
-
-            Thread.Sleep(100);
-        };
-
-        channel.BasicConsume(audioQueueName, true, consumer);
-
-        Console.WriteLine("Listening for messages. Press Ctrl+C to exit.");
-
-        var exitEvent = new ManualResetEvent(false);
-        Console.CancelKeyPress += (sender, eventArgs) =>
-        {
-            eventArgs.Cancel = true;
-            exitEvent.Set();
-        };
-
-        while (true)
-        {
-            if (exitEvent.WaitOne(0))
-                break;
-            Thread.Sleep(1000);
         }
-
-        Console.WriteLine("Exiting...");
     }
 
     static void AdjustVolume(string type)
@@ -75,10 +39,10 @@ class Program
 
         switch (type)
         {
-            case "audioincrease":
+            case "1":
                 device.AudioEndpointVolume.MasterVolumeLevelScalar = Math.Min(1.0f, device.AudioEndpointVolume.MasterVolumeLevelScalar + step);
                 break;
-            case "audiodecrease":
+            case "2":
                 device.AudioEndpointVolume.MasterVolumeLevelScalar = Math.Max(0.0f, device.AudioEndpointVolume.MasterVolumeLevelScalar - step);
                 break;
             default:
@@ -94,10 +58,10 @@ class Program
 
         switch (type)
         {
-            case "video1":
+            case "3":
                 videoPath = @"C:\Users\ali_e\Downloads\video1.mp4";
                 break;
-            case "video2":
+            case "4":
                 videoPath = @"C:\Users\ali_e\Downloads\video2.mp4";
                 break;
             default:
@@ -113,4 +77,5 @@ class Program
             });
         }
     }
+
 }
